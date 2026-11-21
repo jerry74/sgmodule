@@ -130,7 +130,18 @@ test("all script paths resolve within the fork branch and both hosts are in MITM
 
   const hosts = moduleText.match(/^hostname = %APPEND% (.+)$/m)[1].split(", ");
   assert.deepEqual(hosts, ["*.googlevideo.com", new URL(api).hostname, new URL(alternate).hostname]);
+});
 
-  const oldResponse = moduleText.match(/^youtube\.response = .+?,pattern=([^,]+)/m)[1];
-  assert.doesNotMatch(adBreak, new RegExp(oldResponse));
+test("the existing response handler covers YouTube APIs on both Google API hosts", () => {
+  const pattern = new RegExp(moduleText.match(/^youtube\.response = .+?,pattern=([^,]+)/m)[1]);
+  for (const host of [api, alternate]) {
+    for (const endpoint of ["player", "get_watch", "browse", "next", "search"]) {
+      const url = host + "/" + endpoint;
+      assert.match(url, pattern);
+      assert.match(url + "?foo=1", pattern);
+    }
+    assert.doesNotMatch(host + "/player/ad_break", pattern);
+    assert.doesNotMatch(host + "/player/extra", pattern);
+  }
+  assert.doesNotMatch(api.replace(".com/", ".com.example/") + "/player", pattern);
 });

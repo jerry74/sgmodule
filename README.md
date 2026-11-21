@@ -15,6 +15,8 @@
 
 [Issue #110](https://github.com/Maasea/sgmodule/issues/110) 回報 YouTube iOS 的片中廣告可透過獨立的 `player/ad_break` 請求取得。這個 Fork 參考 [devchristian1337 的 Loon 實作](https://github.com/devchristian1337/loon-plugins/blob/main/src/YouTube/request.js)，依 [Surge HTTP Request 規格](https://manual.nssurge.com/scripting/http-request.html) 在請求階段直接回傳 HTTP 200 與零位元組 Protobuf，避免把不同結構的回應交給既有解碼器。
 
+既有的回應規則也涵蓋 Issue #96 回報的 [YouTube 備用 API 主機](https://github.com/Maasea/sgmodule/issues/96)，讓該主機的播放及首頁等既有端點使用同一個回應腳本。
+
 - 在 Surge 6 匯入 [Fork 測試版模組](https://raw.githubusercontent.com/jerry74/sgmodule/fix/youtube-ad-break/YouTube.Enhance.sgmodule)，啟用 HTTPS MITM 並確認憑證受信任。請單獨啟用此版本，避免原版或其他 YouTube 模組的規則先匹配。
 - 模組參數 `block_ad_break` 預設為 `true`。影片卡住、黑畫面或重試時，設為 `false` 即可放行此 API。若仍有問題，停用 Fork 模組並恢復原版。
 - 在專案根目錄執行 `node --test tests/youtube.adbreak.test.js`，可離線驗證規則、開關、放行行為與回應格式。Surge 6 匯入、YouTube iOS 播放與實際廣告效果仍待實機驗證。
