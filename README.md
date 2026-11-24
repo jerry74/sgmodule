@@ -18,6 +18,7 @@
 既有的回應規則也涵蓋 Issue #96 回報的 [YouTube 備用 API 主機](https://github.com/Maasea/sgmodule/issues/96)，讓該主機的播放及首頁等既有端點使用同一個回應腳本。
 
 - 在 Surge 6 匯入 [Fork 測試版模組](https://raw.githubusercontent.com/jerry74/sgmodule/fix/youtube-ad-break/YouTube.Enhance.sgmodule)，啟用 HTTPS MITM 並確認憑證受信任。請單獨啟用此版本，避免原版或其他 YouTube 模組的規則先匹配。
+- 可保留 Surge 的 MITM over HTTP/2 開啟。模組將 `*.googlevideo.com` 排除規則放在 MITM 清單前方，讓 CDN 播放連線維持端對端 TLS，並保留兩個 YouTube API 主機的去廣告規則。這個模式停用原本的 `initplayback` 改寫，依賴該改寫攔截的廣告可能再出現。若使用 [舊版模組](https://raw.githubusercontent.com/jerry74/sgmodule/47242bce8542938c77778388b3302bfa0c3a10b0/YouTube.Enhance.sgmodule) 回退，請先關閉 HTTP/2 MITM。
 - 模組參數 `block_ad_break` 預設為 `true`。影片卡住、黑畫面或重試時，設為 `false` 即可放行此 API。若仍有問題，停用 Fork 模組並恢復原版。
 - 在專案根目錄執行 `node --test tests/youtube.adbreak.test.js`，可離線驗證規則、開關、放行行為與回應格式。Surge 6 匯入、YouTube iOS 播放與實際廣告效果仍待實機驗證。
 - 上游為 [Maasea/sgmodule](https://github.com/Maasea/sgmodule)，沿用 [Apache-2.0 授權](LICENSE)。

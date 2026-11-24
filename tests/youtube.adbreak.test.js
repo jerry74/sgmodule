@@ -122,14 +122,14 @@ test("the module matches only ad_break and expands the default and disabled argu
 test("all script paths resolve within the fork branch and both hosts are in MITM", () => {
   const branchBase = "https://raw.githubusercontent.com/jerry74/sgmodule/fix/youtube-ad-break/";
   const paths = [...moduleText.matchAll(/script-path=([^,\s]+)/g)].map((match) => match[1]);
-  assert.equal(paths.length, 4);
+  assert.equal(paths.length, 3);
   for (const url of paths) {
     assert.ok(url.startsWith(branchBase), url);
     assert.doesNotThrow(() => readFileSync(join(root, url.slice(branchBase.length))), url);
   }
 
-  const hosts = moduleText.match(/^hostname = %APPEND% (.+)$/m)[1].split(", ");
-  assert.deepEqual(hosts, ["*.googlevideo.com", new URL(api).hostname, new URL(alternate).hostname]);
+  const hosts = moduleText.match(/^hostname = %INSERT% (.+)$/m)[1].split(", ");
+  assert.deepEqual(hosts, ["-*.googlevideo.com", new URL(api).hostname, new URL(alternate).hostname]);
 });
 
 test("the existing response handler covers YouTube APIs on both Google API hosts", () => {
@@ -144,4 +144,11 @@ test("the existing response handler covers YouTube APIs on both Google API hosts
     assert.doesNotMatch(host + "/player/extra", pattern);
   }
   assert.doesNotMatch(api.replace(".com/", ".com.example/") + "/player", pattern);
+});
+
+test("the module excludes the media CDN before existing MITM entries without setting h2", () => {
+  const mitm = moduleText.split("[MITM]")[1];
+  assert.match(mitm, /^hostname = %INSERT% -\*\.googlevideo\.com, /m);
+  assert.doesNotMatch(mitm, /^\s*h2\s*=/m);
+  assert.doesNotMatch(moduleText, /^youtube\.request\.init\s*=/m);
 });
